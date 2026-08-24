@@ -1,0 +1,27 @@
+[
+  {
+    "name": "search_knowledge",
+    "description": "Search this project's published knowledge base. Returns titles/excerpts, not full bodies -- call get_knowledge_article for the content of one you actually need.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": { "type": "string", "description": "Matches against title and excerpt." },
+        "topic_id": { "type": "string", "description": "Restrict to one topic. Optional." }
+      }
+    },
+    "rpc": "claudia_knowledge_search_articles",
+    "argsMap": { "query": "p_query", "topic_id": "p_topic_id" },
+    "fixedArgs": { "p_project_slug": "your-project-slug" }
+  },
+  {
+    "name": "get_knowledge_article",
+    "description": "Full content of one published knowledge article, by the article_id returned from search_knowledge.",
+    "inputSchema": {
+      "type": "object",
+      "properties": { "article_id": { "type": "string" } },
+      "required": ["article_id"]
+    },
+    "rpc": "claudia_knowledge_get_article",
+    "argsMap": { "article_id": "p_article_id" }
+  }
+]
