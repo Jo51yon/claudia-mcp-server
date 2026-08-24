@@ -1,0 +1,18 @@
+Package: claudia-mcp-server
+Version: 1.0.0
+Section: net
+Priority: optional
+Architecture: amd64
+Maintainer: Claudia Platform <platform@sicoru.org>
+Depends: systemd
+Installed-Size: 108928
+Description: Claudia MCP server -- shared core for project-specific MCP tool servers
+ A config-driven Model Context Protocol server, extracted from the real,
+ duplicated petgi-mcp/lintel-mcp Supabase Edge Functions. Handles JSON-RPC
+ protocol, bearer-token authorization against claudia-mcp-oauth, and a
+ declarative RPC-backed tool dispatch loop. Project-specific tools are
+ supplied via a JSON file referenced from /etc/claudia-mcp/config.json --
+ no code changes needed to point this at a new project.
+ .
+ Compiled as a single, dependency-free binary (deno compile) -- no
+ separate runtime needs to be installed on the target machine.
