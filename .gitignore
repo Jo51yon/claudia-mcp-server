@@ -1,0 +1,11 @@
+# Real build artifacts -- never commit these. CI builds them fresh and attaches the .deb to
+# GitHub Releases; a compiled binary or .deb sitting in source control only bloats the repo
+# permanently for no real benefit.
+claudia-mcp-server
+*.deb
+claudia-mcp-server_*/
+
+# Real local dev config -- may contain real secrets once filled in. test-etc/config.json is
+# deliberately not committed even though the example file (checked into packaging/) is safe;
+# a developer's own filled-in local copy should never accidentally get pushed.
+test-etc/config.json
