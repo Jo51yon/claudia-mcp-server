@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+if [ "$1" = "purge" ]; then
+  # Real config (with real secrets in it) only ever removed on an EXPLICIT purge, never a
+  # plain remove -- matching standard Debian convention, and simple good sense for a file
+  # that may contain a real service-role key.
+  rm -rf /etc/claudia-mcp
+  systemctl daemon-reload || true
+fi
+exit 0
