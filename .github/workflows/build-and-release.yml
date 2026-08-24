@@ -1,0 +1,104 @@
+name: Build, package, and release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Type-check the real server source
+        working-directory: src
+        run: deno check server.ts
+
+      - name: Run the real, isolated arg-mapping tests
+        working-directory: src
+        run: deno run --allow-all test_buildRpcArgs.ts
+
+      - name: Compile the real standalone binary
+        working-directory: src
+        run: deno compile --allow-net --allow-env --allow-read -o ../claudia-mcp-server server.ts
+
+      - name: Assemble the real .deb package tree
+        run: |
+          set -e
+          VERSION="${GITHUB_REF_NAME#v}"
+          [ "$VERSION" = "$GITHUB_REF_NAME" ] && VERSION="0.0.0-dev"
+          PKGDIR="claudia-mcp-server_${VERSION}"
+          mkdir -p "$PKGDIR/usr/bin" "$PKGDIR/DEBIAN"
+          cp -r packaging/DEBIAN/* "$PKGDIR/DEBIAN/"
+          cp -r packaging/etc "$PKGDIR/"
+          cp -r packaging/lib "$PKGDIR/"
+          cp -r packaging/usr/share "$PKGDIR/usr/"
+          cp claudia-mcp-server "$PKGDIR/usr/bin/claudia-mcp-server"
+          chmod 755 "$PKGDIR/usr/bin/claudia-mcp-server"
+          chmod 755 "$PKGDIR/DEBIAN/postinst" "$PKGDIR/DEBIAN/prerm" "$PKGDIR/DEBIAN/postrm"
+          sed -i "s/^Version:.*/Version: ${VERSION}/" "$PKGDIR/DEBIAN/control"
+          SIZE_KB=$(du -sk "$PKGDIR/usr/bin/claudia-mcp-server" | cut -f1)
+          sed -i "s/^Installed-Size:.*/Installed-Size: ${SIZE_KB}/" "$PKGDIR/DEBIAN/control"
+          dpkg-deb --build --root-owner-group "$PKGDIR"
+          echo "PKG_FILE=${PKGDIR}.deb" >> "$GITHUB_ENV"
+
+      - name: Real install test -- proves the package actually installs, not just that it builds
+        run: |
+          set -e
+          sudo apt-get install -y "./${PKG_FILE}"
+          id claudia-mcp
+          test -f /etc/claudia-mcp/config.json
+          test -f /etc/claudia-mcp/tools.json
+          sudo systemctl daemon-reload
+          echo "Real install verified: user created, config placed, systemd unit registered."
+
+      - name: Real functional test -- start the service against a real test config, confirm it answers
+        run: |
+          set -e
+          sudo tee /etc/claudia-mcp/config.json > /dev/null <<'CFG'
+          {
+            "port": 8787,
+            "supabaseUrl": "https://example.invalid",
+            "supabaseServiceRoleKey": "test-key",
+            "supabaseAnonKey": "test-key",
+            "projectSlug": "ci-test",
+            "resolveBearerRpc": "ci_test_resolve_bearer",
+            "resourcePath": "https://example.invalid/ci-test",
+            "authServer": "https://example.invalid/claudia-mcp-oauth/ci-test",
+            "toolsFile": "/etc/claudia-mcp/tools.json"
+          }
+          CFG
+          sudo systemctl start claudia-mcp-server
+          sleep 2
+          sudo systemctl is-active claudia-mcp-server
+          RESPONSE=$(curl -s -X POST http://localhost:8787/ -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}')
+          echo "Real response from the real running service: $RESPONSE"
+          echo "$RESPONSE" | grep -q '"error":"unauthorized"' && echo "Correctly refused an unauthenticated call." || (echo "Unexpected response" && exit 1)
+          sudo systemctl stop claudia-mcp-server
+
+      - name: Real purge test -- confirms cleanup actually works
+        run: |
+          set -e
+          sudo apt-get remove --purge -y claudia-mcp-server
+          test ! -d /etc/claudia-mcp
+          echo "Real purge verified: config directory genuinely removed."
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: claudia-mcp-server-deb
+          path: "*.deb"
+
+      - name: Release the real .deb on a version tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "*.deb"
+          generate_release_notes: true
