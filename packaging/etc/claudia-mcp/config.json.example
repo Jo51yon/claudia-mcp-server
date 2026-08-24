@@ -1,0 +1,11 @@
+{
+  "port": 8787,
+  "supabaseUrl": "https://YOUR-PROJECT.supabase.co",
+  "supabaseServiceRoleKey": "YOUR-SERVICE-ROLE-KEY",
+  "supabaseAnonKey": "YOUR-ANON-OR-PUBLISHABLE-KEY",
+  "projectSlug": "your-project-slug",
+  "resolveBearerRpc": "your_project_mcp_resolve_bearer",
+  "resourcePath": "https://your-domain.example/your-project",
+  "authServer": "https://your-domain.example/claudia-mcp-oauth/your-project",
+  "toolsFile": "/etc/claudia-mcp/tools.json"
+}
