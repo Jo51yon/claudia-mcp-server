@@ -1,0 +1,23 @@
+[Unit]
+Description=Claudia MCP server (config-driven, project-agnostic)
+Documentation=https://github.com/Jo51yon/claudia-mcp-server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/claudia-mcp-server
+Restart=on-failure
+RestartSec=3
+User=claudia-mcp
+Group=claudia-mcp
+# Least-privilege: this service reads its own config directory and talks out over the network,
+# nothing else -- no reason to run as root, no reason to write anywhere but its own log stream.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/etc/claudia-mcp
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
