@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: claudia-mcp-server
+Source: https://github.com/Jo51yon/claudia-mcp-server
+
+Files: *
+Copyright: 2026 Sicoru / Claudia Platform
+License: proprietary
+ Internal Claudia platform component. Not yet released under an open licence.
