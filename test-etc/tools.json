@@ -1,0 +1,10 @@
+[
+  {
+    "name": "search_knowledge",
+    "description": "Search the knowledge base.",
+    "inputSchema": { "type": "object", "properties": { "query": { "type": "string" } } },
+    "rpc": "claudia_knowledge_search_articles",
+    "argsMap": { "query": "p_query", "topic_id": "p_topic_id" },
+    "fixedArgs": { "p_project_slug": "rig-fixture" }
+  }
+]
