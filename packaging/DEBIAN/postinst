@@ -12,12 +12,18 @@ fi
 
 # Copy example config into place ONLY if no real config exists yet -- an upgrade must never
 # silently overwrite a real admin's real, already-configured deployment.
+echo "DIAGNOSTIC: contents of /etc/claudia-mcp before the copy check:"
+ls -la /etc/claudia-mcp/ 2>&1 || echo "DIAGNOSTIC: /etc/claudia-mcp does not exist yet"
+
 if [ ! -f /etc/claudia-mcp/config.json ]; then
   cp /etc/claudia-mcp/config.json.example /etc/claudia-mcp/config.json
 fi
 if [ ! -f /etc/claudia-mcp/tools.json ]; then
   cp /etc/claudia-mcp/tools.json.example /etc/claudia-mcp/tools.json
 fi
+
+echo "DIAGNOSTIC: contents of /etc/claudia-mcp after the copy attempt:"
+ls -la /etc/claudia-mcp/ 2>&1
 
 chown -R root:claudia-mcp /etc/claudia-mcp
 chmod 750 /etc/claudia-mcp
