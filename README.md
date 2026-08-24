@@ -10,6 +10,9 @@ means editing two config files, not writing a new server.
 Compiles to a single, standalone Linux binary (`deno compile`) — no separate runtime needs to be
 installed on the target machine — and ships as a real, tested `.deb` package with a systemd unit.
 
+For what this actually does, the real request/auth flow, and a full config.json/tools.json
+walkthrough, see [OVERVIEW.md](./OVERVIEW.md).
+
 **Real, current status:** not yet what `petgi-mcp`/`lintel-mcp` run in production. This proves
 the shared-core-plus-Debian-packaging concept end to end, on a new, standalone build. Migrating
 the live Edge Functions to consume this core is real, separate, undone work — refactoring a
