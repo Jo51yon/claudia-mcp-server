@@ -57,8 +57,13 @@ jobs:
           echo "-- apt-get install: done --"
           id claudia-mcp
           echo "-- user check: done --"
-          if [ -f /etc/claudia-mcp/config.json ]; then echo "-- config.json: present --"; else echo "-- config.json: MISSING --"; exit 1; fi
-          if [ -f /etc/claudia-mcp/tools.json ]; then echo "-- tools.json: present --"; else echo "-- tools.json: MISSING --"; exit 1; fi
+          # /etc/claudia-mcp is deliberately 750 (root + claudia-mcp group only) -- it can hold
+          # a real secret once configured. Checking as the plain runner user was the actual bug
+          # here: [ -f ... ] can't even stat inside a directory it has no access to, so it
+          # reports "missing" for a file that genuinely exists. sudo, matching how a real admin
+          # would check this on a real deployed VM, not a weaker permission model for the test.
+          if sudo test -f /etc/claudia-mcp/config.json; then echo "-- config.json: present --"; else echo "-- config.json: MISSING --"; exit 1; fi
+          if sudo test -f /etc/claudia-mcp/tools.json; then echo "-- tools.json: present --"; else echo "-- tools.json: MISSING --"; exit 1; fi
           sudo systemctl daemon-reload
           echo "-- daemon-reload: done --"
           echo "Real install verified: user created, config placed, systemd unit registered."
