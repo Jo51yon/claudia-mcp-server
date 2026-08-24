@@ -54,10 +54,13 @@ jobs:
         run: |
           set -e
           sudo apt-get install -y "./${PKG_FILE}"
+          echo "-- apt-get install: done --"
           id claudia-mcp
-          test -f /etc/claudia-mcp/config.json
-          test -f /etc/claudia-mcp/tools.json
+          echo "-- user check: done --"
+          if [ -f /etc/claudia-mcp/config.json ]; then echo "-- config.json: present --"; else echo "-- config.json: MISSING --"; exit 1; fi
+          if [ -f /etc/claudia-mcp/tools.json ]; then echo "-- tools.json: present --"; else echo "-- tools.json: MISSING --"; exit 1; fi
           sudo systemctl daemon-reload
+          echo "-- daemon-reload: done --"
           echo "Real install verified: user created, config placed, systemd unit registered."
 
       - name: Real functional test -- start the service against a real test config, confirm it answers
